@@ -1,0 +1,36 @@
+{
+  "name": "notifications",
+  "repo": "goinstant/components",
+  "description": "Notifications drop-in component for GoInstant",
+  "version": "1.0.0",
+  "keywords": [],
+  "dependencies": {
+    "lodash/lodash": "*",
+    "caolan/async": "*",
+    "component/emitter": "*",
+    "component/classes": "*",
+    "component/event": "*"
+  },
+  "development": {
+    "component/jquery": "*"
+  },
+  "main": "lib/notifications.js",
+  "scripts": [
+    "lib/notifications.js",
+    "lib/notifications_ctrl.js",
+    "lib/notification_view.js"
+  ],
+  "templates": [
+    "templates/template.html"
+  ],
+  "styles": [
+    "components.css"
+  ],
+  "images": [
+    "images/error.png",
+    "images/info.png",
+    "images/success.png",
+    "images/warning.png",
+    "images/x-close-sprite.png"
+  ]
+}
