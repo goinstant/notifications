@@ -72,8 +72,8 @@ describe('Status Notification Component', function() {
         this.emit('message', message);
       };
 
-      fakeChannel.on = sinon.stub().callsArg(2);
-      fakeChannel.off = sinon.stub().callsArg(2);
+      fakeChannel.on = sinon.stub();
+      fakeChannel.off = sinon.stub();
       fakeChannel.message = sinon.stub().callsArg(1);
 
       fakeRoom = {};
