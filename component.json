@@ -28,9 +28,14 @@
   ],
   "images": [
     "images/error.png",
+    "images/error@2x.png",
     "images/info.png",
+    "images/info@2x.png",
     "images/success.png",
+    "images/success@2x.png",
     "images/warning.png",
-    "images/x-close-sprite.png"
+    "images/warning@2x.png",
+    "images/x-close-sprite.png",
+    "images/x-close-sprite@2x.png"
   ]
 }
