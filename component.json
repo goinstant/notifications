@@ -5,11 +5,11 @@
   "version": "1.0.0",
   "keywords": [],
   "dependencies": {
-    "lodash/lodash": "*",
-    "caolan/async": "*",
-    "component/emitter": "*",
-    "component/classes": "*",
-    "component/event": "*"
+    "lodash/lodash": "2.3.0",
+    "caolan/async": "f01b3992fbe7aa2f4881152143608ad666aea1cc",
+    "component/emitter": "1.1.0",
+    "component/classes": "1.1.4",
+    "component/event": "0.1.1"
   },
   "development": {
     "component/jquery": "*"
