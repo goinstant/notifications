@@ -13,6 +13,7 @@
   position: fixed;
   width: 400px;
   min-height: 40px;
+  line-height: 1.2;
   z-index: 9990;
   font-family: sans-serif;
   font-size: 14px;
