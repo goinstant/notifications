@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GoInstant: Notifications Example: defaults</title>
+
+    <script src="https://cdn.goinstant.net/v1/platform.min.js"></script>
+
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="../node_modules/lodash/lodash.js"></script>
+
+    <!-- Config -->
+    <script src="../config/config.js"></script>
+
+    <!-- Widget Example Page -->
+    <link rel="stylesheet" href="../node_modules/widget-examples/css/examples.css" />
+    <script src="../node_modules/widget-examples/js/template.js"></script>
+    <script src="../node_modules/widget-examples/js/examples.js"></script>
+
+    <!-- GoInstant Widget Build -->
+    <link rel="stylesheet" href="../build/build.css" />
+    <script src="../build/build.js"></script>
+    <style type="text/css">
+      #test-container {
+        background-color: #444;
+        width: 700px;
+        height: 300px;
+        position: relative;
+        top: 10px;
+        left: 200px;
+      }
+      .container-container {
+        width: 100%;
+        height: 600px;
+        background-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+
+      // Define the example
+      function widgetTest(room) {
+
+        var Notifications = require('notifications');
+
+        var notifications = new Notifications( { position: 'top-right', container: $('#test-container')[0] });
+
+        notifications.subscribe(room, function(err) {
+            if (err) throw err;
+        });
+
+        $('#notificationForm').submit(function(e) {
+          e.preventDefault();
+          var data = {
+            room: room,
+            type: $('input:radio[name=\'type\']:checked').val(),
+            message: $('#message').val(),
+            displayToSelf: $('#displayToSelf').is(':checked')
+          };
+
+          notifications.publish(data, function(err) {
+            if (err) throw err;
+          });
+        });
+
+      }
+
+      // Load the example test page
+      $(document).ready(function() {
+
+        var config = {
+          name: 'Notifications',
+          desc: 'default options',
+          test: widgetTest
+        };
+
+        var example = new Example(config);
+        example.load();
+      });
+
+    </script>
+
+    <div id="common"></div>
+
+    <div id="expected">
+      <p>
+      the expected behaviour is that each time you submit the form below, a
+      notification containing the entered message and sporting the selected style
+      should appear on remote clients that have loaded this page.
+      </p>
+      <ul>
+        <li>a max of <strong>3</strong> notifications should be shown at any one time.</li>
+        <li>notifications should automatically disappear after <strong>3</strong> seconds.</li>
+        <li>notifications should appear at the <strong>top-center</strong> of the screen.</li>
+        <li>notifications should appear on the local client only if <strong>display to self</strong> is checked.</li>
+      </ul>
+    </div>
+
+    <div id="content">
+    <form id="notificationForm" action="" method="post">
+      <label for="message">Message:</label>
+      <input type="text" id="message" placeholder="Enter message here" /><br />
+      <label for="typeSuccess">Success:</label>
+      <input type="radio" id="typeSuccess" name="type" value="success" checked="checked" />
+      <label for="typeInfo">Info:</label>
+      <input type="radio" id="typeInfo" name="type" value="info" />
+      <label for="typeSuccess">Warning:</label>
+      <input type="radio" id="typeWarning" name="type" value="warning" />
+      <label for="typeSuccess">Error:</label>
+      <input type="radio" id="typeError" name="type" value="error" /><br />
+      <label for="displayToSelf">Display to Self:</label>
+      <input type="checkbox" id="displayToSelf" /><br />
+
+      <input type="submit" value="Generate Notification" />
+    </form>
+    </div>
+
+    <div class="container-container">
+      <div id="test-container"></div>
+    </div>
+  </body>
+</html>
