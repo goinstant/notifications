@@ -1,6 +1,6 @@
 /* All styles will be prefixed with .gi */
 
-.gi-notify-container {
+.gi-notify-wrapper {
   position: fixed;
   width: 400px;
   min-height: 40px;
@@ -9,50 +9,50 @@
   font-size: 14px;
 }
 
-.gi-notify-container-custom {
-  position: relative;
+.gi-notify-wrapper-custom {
+  position: absolute;
   width: 400px;
   min-height: 40px;
   z-index: 1;
 }
 
-.gi-notify-container.gi-notify-top,
-.gi-notify-container-custom.gi-notify-top {
+.gi-notify-wrapper.gi-notify-top,
+.gi-notify-wrapper-custom.gi-notify-top {
   left: 50%;
   top: 0;
   margin-left: -200px;
 }
 
-.gi-notify-container.gi-notify-top-right,
-.gi-notify-container-custom.gi-notify-top-right {
+.gi-notify-wrapper.gi-notify-top-right,
+.gi-notify-wrapper-custom.gi-notify-top-right {
   top: 0;
   right: 10px;
 }
 
 
-.gi-notify-container.gi-notify-top-left,
-.gi-notify-container-custom.gi-notify-top-left {
+.gi-notify-wrapper.gi-notify-top-left,
+.gi-notify-wrapper-custom.gi-notify-top-left {
   top: 0;
   left: 5px;
 }
 
 
-.gi-notify-container.gi-notify-bottom-right,
-.gi-notify-container-custom.gi-notify-bottom-right {
+.gi-notify-wrapper.gi-notify-bottom-right,
+.gi-notify-wrapper-custom.gi-notify-bottom-right {
   bottom: 5px;
   right: 10px;
 }
 
 
-.gi-notify-container.gi-notify-bottom-left,
-.gi-notify-container-custom.gi-notify-bottom-left {
+.gi-notify-wrapper.gi-notify-bottom-left,
+.gi-notify-wrapper-custom.gi-notify-bottom-left {
   bottom: 5px;
   left: 5px;
 }
 
 
-.gi-notify-container.gi-notify-bottom,
-.gi-notify-container-custom.gi-notify-bottom {
+.gi-notify-wrapper.gi-notify-bottom,
+.gi-notify-wrapper-custom.gi-notify-bottom {
   left: 50%;
   bottom: 5px;
   margin-left: -200px;
