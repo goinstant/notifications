@@ -44,7 +44,11 @@
 
         var Notifications = require('notifications');
 
-        var notifications = new Notifications( { position: 'top-right', container: $('#test-container')[0] });
+        var notifications = new Notifications({
+          displayTimer: 200000,
+          position: 'bottom-right',
+          container: $('#test-container')[0]
+        });
 
         notifications.subscribe(room, function(err) {
             if (err) throw err;
@@ -92,7 +96,7 @@
       <ul>
         <li>a max of <strong>3</strong> notifications should be shown at any one time.</li>
         <li>notifications should automatically disappear after <strong>3</strong> seconds.</li>
-        <li>notifications should appear at the <strong>top-center</strong> of the screen.</li>
+        <li>notifications should appear at the <strong>bottom-right</strong> of the <strong>container</strong>.</li>
         <li>notifications should appear on the local client only if <strong>display to self</strong> is checked.</li>
       </ul>
     </div>
