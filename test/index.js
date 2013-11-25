@@ -421,7 +421,7 @@ describe('Status Notification Component', function() {
       });
 
       it('places the notifications in the options container', function() {
-        var $el = $('<div></div').addClass('.testContainer');
+        var $el = $('<div></div>').addClass('.testContainer');
 
         $('body').append($el);
 
@@ -434,8 +434,69 @@ describe('Status Notification Component', function() {
 
         var results = $el.find(notificationClass);
         assert.equal(results.length, 1);
+        notifications2.destroy();
+        $el.remove();
       });
 
+      it('doesn\'t remove the container if in options.container', function() {
+        var $el = $('<div></div>').addClass('.testContainer');
+
+        $('body').append($el);
+
+        var clock = sinon.useFakeTimers();
+
+        var notifications2 = new Notifications({
+          displayTimer: 200,
+          container: $el.get(0)
+        });
+
+        notifications2.ctrl.handler({message: 'Foo', type: 'info'});
+
+        clock.tick(500);
+
+        assert.equal($el.length, 1);
+        notifications2.destroy();
+        $el.remove();
+      });
+
+      it('doesn\'t add the container in options.container', function() {
+        var $el = $('<div></div>').addClass('testContainer');
+
+        $('body').append($el);
+
+        var clock = sinon.useFakeTimers();
+
+        var notifications2 = new Notifications({
+          displayTimer: 200,
+          container: $el.get(0)
+        });
+
+        notifications2.ctrl.handler({message: 'Foo', type: 'info'});
+
+        var result = $(notificationClass).length;
+
+        assert.equal(result, 1);
+        notifications2.destroy();
+        $el.remove();
+      });
+
+      it('doesn\'t remove the container when destroying', function() {
+        var $el = $('<div></div>').addClass('.testContainer');
+
+        $('body').append($el);
+
+        var notifications2 = new Notifications({
+          displayTimer: 200,
+          container: $el.get(0)
+        });
+
+        notifications2.ctrl.handler({message: 'Foo', type: 'info'});
+
+        notifications2.destroy();
+
+        assert.equal($el.length, 1);
+        $el.remove();
+      });
     });
 
   });
