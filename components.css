@@ -30,7 +30,7 @@
 
 /* Custom Conatiner */
 .gi-notify-wrapper-custom {
-  position: relative;
+  position: absolute;
   width: 400px;
   min-height: 40px;
   z-index: 1;
