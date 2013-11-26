@@ -388,7 +388,6 @@ describe('Status Notification Component', function() {
     });
 
     it('Hides the wrapper when all notifications are gone', function() {
-      console.log($(wrapperClass).length);
       ctrl.handler({message: 'Foo', type: 'info' });
       ctrl.handler({message: 'Foo2', type: 'info' });
       assert.equal($(wrapperClass).css('display'), 'block');
