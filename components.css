@@ -3,13 +3,13 @@
    ========================================================================== */
 
 /* Change the box model */
-.gi-notify-container * {
+.gi-notify-wrapper * {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 
 /* Default Conatiner */
-.gi-notify-container {
+.gi-notify-wrapper {
   position: fixed;
   width: 400px;
   min-height: 40px;
@@ -20,23 +20,23 @@
 }
 
   @media (max-width: 500px) {
-    .gi-notify-container {
+    .gi-notify-wrapper {
       width: 100%;
     }
-    .gi-notify-container > div {
+    .gi-notify-wrapper > div {
       padding: 0 1em;
     }
   }
 
 /* Custom Conatiner */
-.gi-notify-container-custom {
-  position: relative;
+.gi-notify-wrapper-custom {
+  position: absolute;
   width: 400px;
   min-height: 40px;
   z-index: 1;
 }
 
-/* 
+/*
    Positioning
    ========================================================================== */
 
@@ -89,7 +89,7 @@
   }
 
 
-/* 
+/*
    Notification Element
    ========================================================================== */
 
@@ -111,8 +111,8 @@
 }
 
 
-/* 
-   Icons 
+/*
+   Icons
    ========================================================================== */
 
 .gi-notify-body {
@@ -126,7 +126,6 @@
 .gi-notify-icon {
   display: block;
   position: absolute;
-  height: 100%;
   left: 0;
   bottom: 0;
   padding: 12px 0 12px 14px;
@@ -163,7 +162,7 @@
       background-position: 0 -20px;
     }
 
-/* 
+/*
    Notification Types
    ========================================================================== */
 

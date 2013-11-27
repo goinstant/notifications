@@ -10,11 +10,35 @@ describe('Status Notification Component', function() {
   var _ = require('lodash');
   var Notifications = require('notifications');
 
+  var wrapperClass = '.gi-notify-wrapper';
+  var positionClass = 'gi-notify-bottom-right';
+  var notificationClass = '.gi-notify';
+  var fakeRoom;
+  var fakeChannel;
+  var notifications;
+
+  fakeChannel = new Emitter();
+
+  fakeChannel.message = function(message) {
+    this.emit('message', message);
+  };
+
+  fakeChannel.on = sinon.stub();
+  fakeChannel.off = sinon.stub();
+  fakeChannel.message = sinon.stub().callsArg(1);
+
+  fakeRoom = {};
+
+  fakeRoom.channel = function() {
+    return fakeChannel;
+  };
+
   describe('Notifications.constructor', function() {
 
     it('returns a new notifications instance', function() {
       var notifications = new Notifications();
       assert.instanceOf(notifications, Notifications);
+      notifications.destroy();
     });
 
     it('throws if passed an invalid option', function() {
@@ -57,38 +81,16 @@ describe('Status Notification Component', function() {
 
   describe('Notifications Subscribe and Publish', function() {
 
-    var containerClass = '.gi-notify-container';
-    var positionClass = 'gi-notify-bottom-right';
-    var notificationClass = '.gi-notify';
-    var fakeRoom;
-    var fakeChannel;
-    var notifications;
     var ctrl;
 
     beforeEach(function() {
-      fakeChannel = new Emitter();
-
-      fakeChannel.message = function(message) {
-        this.emit('message', message);
-      };
-
-      fakeChannel.on = sinon.stub();
-      fakeChannel.off = sinon.stub();
-      fakeChannel.message = sinon.stub().callsArg(1);
-
-      fakeRoom = {};
-
-      fakeRoom.channel = function() {
-        return fakeChannel;
-      };
-
       notifications = new Notifications();
       ctrl = notifications.ctrl;
-
     });
 
     afterEach(function() {
       notifications.destroy();
+      fakeChannel.on.reset();
     });
 
     describe('Notifications.subscribe', function() {
@@ -268,176 +270,181 @@ describe('Status Notification Component', function() {
       });
 
     });
-
-    describe('Notifications Controller and View' , function() {
-      var notifications;
-      var ctrl;
-
-      // Cross browser event trigger
-      function fireEvent(obj, evt) {
-        var fireOnThis = obj;
-        var evObj;
-
-        if (!document.createEvent) {
-          evObj = document.createEventObject();
-          fireOnThis.fireEvent( 'on' + evt, evObj );
-        } else {
-          evObj = document.createEvent('MouseEvents');
-          evObj.initEvent( evt, true, false );
-          fireOnThis.dispatchEvent( evObj );
-        }
-      }
-
-      beforeEach(function() {
-        notifications = new Notifications({
-          displayTimer: 200,
-          position: 'bottom-right'
-        });
-
-        ctrl = notifications.ctrl;
-      });
-
-      afterEach(function() {
-        notifications.destroy();
-      });
-
-      it('displays a notification', function() {
-        ctrl.handler({message: 'Foo', type: 'info'});
-        var list = $(containerClass).find(notificationClass);
-        assert.equal(list.length, 1);
-      });
-
-      it('displays the correct number of notifications', function() {
-        _.times(3, function() {
-          ctrl.handler({message: 'Foo', type: 'info'});
-        });
-
-        var list = $(containerClass).find(notificationClass);
-
-        assert.equal(list.length, 3);
-      });
-
-
-      it('displays no more than the specified maximum', function() {
-        _.times(5, function() {
-          ctrl.handler({message: 'Foo', type: 'info'});
-        });
-
-        var list = $(containerClass).find(notificationClass);
-        assert.equal(list.length, 3);
-      });
-
-      it('displays a notification for the correct duration', function(done) {
-        ctrl.handler({ message: 'Foo', type: 'info' });
-
-        var list = $(containerClass).find(notificationClass);
-        assert.equal(list.length, 1);
-
-        _.delay(function() {
-          var list = $(containerClass).find(notificationClass);
-          assert.equal(list.length, 0);
-          done();
-        }, 200);
-      });
-
-      it('displays a notification in the correct position', function() {
-        ctrl.handler({ message: 'Foo', type: 'info' });
-        assert($(containerClass).hasClass(positionClass));
-      });
-
-      it('Queues surplus notifications', function(done) {
-        _.times(4, function() {
-          ctrl.handler({ message: 'Foo', type: 'info' });
-        });
-
-        var list = $(containerClass).find(notificationClass);
-        assert.equal(list.length, 3);
-
-        _.delay(function() {
-          var list = $(containerClass).find(notificationClass);
-          assert.equal(list.length, 1);
-          done();
-        }, 200);
-      });
-
-      it('Removes the container once destroyed', function() {
-        notifications.destroy();
-        var list = $(containerClass);
-        assert.equal(list.length, 0);
-      });
-
-      it('Removes the notification if its closed', function() {
-        ctrl.handler({message: 'Foo', type: 'info'});
-
-        var list = $(containerClass).find(notificationClass);
-        assert.equal(list.length, 1);
-
-        ctrl._activeNotifications[0].remove();
-
-        var list2 = $(containerClass).find(notificationClass);
-        assert.equal(list2.length, 0);
-      });
-
-      it('Removes the container when all notifications are gone', function() {
-        ctrl.handler({message: 'Foo', type: 'info' });
-        ctrl.handler({message: 'Foo2', type: 'info' });
-        assert.equal($(containerClass).length, 1);
-
-        ctrl._activeNotifications[0].remove();
-        assert.equal($(containerClass).length, 1);
-
-        ctrl._activeNotifications[0].remove();
-        assert.equal($(containerClass).length, 0);
-      });
-
-      it('continues to display a notification on hover', function(done) {
-
-        ctrl.handler({message: 'Foo', type: 'info'});
-
-        var $notification = $(containerClass).find(notificationClass);
-
-        fireEvent($notification.get(0), 'mouseover');
-
-        _.delay(function() {
-          assert.equal($(containerClass).find(notificationClass).length, 1);
-          done();
-        }, 250);
-      });
-
-      it('remove the notification after hover', function(done) {
-
-        ctrl.handler({message: 'Foo', type: 'info'});
-
-        var $notification = $(containerClass).find(notificationClass);
-
-        fireEvent($notification.get(0), 'mouseover');
-
-        _.delay(function() {
-          assert.equal($(containerClass).find(notificationClass).length, 1);
-          fireEvent($notification.get(0), 'mouseout');
-          assert.equal($(containerClass).find(notificationClass).length, 0);
-          done();
-        }, 250);
-      });
-
-      it('places the notifications in the options container', function() {
-        var $el = $('<div></div').addClass('.testContainer');
-
-        $('body').append($el);
-
-        var notifications2 = new Notifications({
-          displayTimer: 200,
-          container: $el.get(0)
-        });
-
-        notifications2.ctrl.handler({message: 'Foo', type: 'info'});
-
-        var results = $el.find(notificationClass);
-        assert.equal(results.length, 1);
-      });
-
-    });
-
   });
 
+  describe('Notifications Controller and View' , function() {
+    var notifications;
+    var ctrl;
+    var destroyed;
+
+    // Cross browser event trigger
+    function fireEvent(obj, evt) {
+      var fireOnThis = obj;
+      var evObj;
+      var destroyed;
+
+      if (!document.createEvent) {
+        evObj = document.createEventObject();
+        fireOnThis.fireEvent( 'on' + evt, evObj );
+      } else {
+        evObj = document.createEvent('MouseEvents');
+        evObj.initEvent( evt, true, false );
+        fireOnThis.dispatchEvent( evObj );
+      }
+    }
+
+    beforeEach(function() {
+      notifications = new Notifications({
+        displayTimer: 200,
+        position: 'bottom-right'
+      });
+
+      ctrl = notifications.ctrl;
+      destroyed = sinon.spy(notifications, 'destroy');
+    });
+
+    afterEach(function() {
+      if(!destroyed.called) {
+        notifications.destroy();
+      }
+    });
+
+    it('displays a notification', function() {
+      ctrl.handler({message: 'Foo', type: 'info'});
+      var list = $(wrapperClass).find(notificationClass);
+      assert.equal(list.length, 1);
+    });
+
+    it('displays the correct number of notifications', function() {
+      _.times(3, function() {
+        ctrl.handler({message: 'Foo', type: 'info'});
+      });
+
+      var list = $(wrapperClass).find(notificationClass);
+
+      assert.equal(list.length, 3);
+    });
+
+
+    it('displays no more than the specified maximum', function() {
+      _.times(5, function() {
+        ctrl.handler({message: 'Foo', type: 'info'});
+      });
+
+      var list = $(wrapperClass).find(notificationClass);
+      assert.equal(list.length, 3);
+    });
+
+    it('displays a notification for the correct duration', function(done) {
+      ctrl.handler({ message: 'Foo', type: 'info' });
+
+      var list = $(wrapperClass).find(notificationClass);
+      assert.equal(list.length, 1);
+
+      _.delay(function() {
+        var list = $(wrapperClass).find(notificationClass);
+        assert.equal(list.length, 0);
+        done();
+      }, 200);
+    });
+
+    it('displays a notification in the correct position', function() {
+      ctrl.handler({ message: 'Foo', type: 'info' });
+      assert($(wrapperClass).hasClass(positionClass));
+    });
+
+
+    it('Queues surplus notifications', function(done) {
+      _.times(4, function() {
+        ctrl.handler({ message: 'Foo', type: 'info' });
+      });
+
+      var list = $(wrapperClass).find(notificationClass);
+      assert.equal(list.length, 3);
+
+      _.delay(function() {
+        var list = $(wrapperClass).find(notificationClass);
+        assert.equal(list.length, 1);
+        done();
+      }, 200);
+    });
+
+    it('Removes the wrapper once destroyed', function() {
+      notifications.destroy();
+      var list = $(wrapperClass);
+      assert.equal(list.length, 0);
+    });
+
+    it('Removes the notification if its closed', function() {
+      ctrl.handler({message: 'Foo', type: 'info'});
+
+      var list = $(wrapperClass).find(notificationClass);
+      assert.equal(list.length, 1);
+
+      ctrl._activeNotifications[0].remove();
+
+      var list2 = $(wrapperClass).find(notificationClass);
+      assert.equal(list2.length, 0);
+    });
+
+    it('Hides the wrapper when all notifications are gone', function() {
+      ctrl.handler({message: 'Foo', type: 'info' });
+      ctrl.handler({message: 'Foo2', type: 'info' });
+      assert.equal($(wrapperClass).css('display'), 'block');
+
+      ctrl._activeNotifications[0].remove();
+      assert.equal($(wrapperClass).css('display'), 'block');
+
+      ctrl._activeNotifications[0].remove();
+      assert.equal($(wrapperClass).css('display'), 'none');
+    });
+
+    it('continues to display a notification on hover', function(done) {
+
+      ctrl.handler({message: 'Foo', type: 'info'});
+
+      var $notification = $(wrapperClass).find(notificationClass);
+
+      fireEvent($notification.get(0), 'mouseover');
+
+      _.delay(function() {
+        assert.equal($(wrapperClass).find(notificationClass).length, 1);
+        done();
+      }, 250);
+    });
+
+    it('remove the notification after hover', function(done) {
+
+      ctrl.handler({message: 'Foo', type: 'info'});
+
+      var $notification = $(wrapperClass).find(notificationClass);
+
+      fireEvent($notification.get(0), 'mouseover');
+
+      _.delay(function() {
+        assert.equal($(wrapperClass).find(notificationClass).length, 1);
+        fireEvent($notification.get(0), 'mouseout');
+        assert.equal($(wrapperClass).find(notificationClass).length, 0);
+        done();
+      }, 250);
+    });
+
+    it('places the notifications in the options container', function() {
+      var $el = $('<div></div>').addClass('.testContainer');
+
+      $('body').append($el);
+
+      var notifications2 = new Notifications({
+        displayTimer: 200,
+        container: $el.get(0)
+      });
+
+      notifications2.ctrl.handler({message: 'Foo', type: 'info'});
+
+      var results = $el.find(notificationClass);
+      assert.equal(results.length, 1);
+      notifications2.destroy();
+      $el.remove();
+    });
+  });
 });
