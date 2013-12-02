@@ -202,7 +202,7 @@ module.exports = require('./dist/lodash.compat.js');
 require.register("lodash-lodash/dist/lodash.compat.js", function(exports, require, module){
 /**
  * @license
- * Lo-Dash 2.2.1 (Custom Build) <http://lodash.com/>
+ * Lo-Dash 2.3.0 (Custom Build) <http://lodash.com/>
  * Build: `lodash -o ./dist/lodash.compat.js`
  * Copyright 2012-2013 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.5.2 <http://underscorejs.org/LICENSE>
@@ -260,7 +260,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
   var reFlags = /\w*$/;
 
   /** Used to detected named functions */
-  var reFuncName = /^function[ \n\r\t]+\w/;
+  var reFuncName = /^\s*function[ \n\r\t]+\w/;
 
   /** Used to match "interpolate" template delimiters */
   var reInterpolate = /<%=([\s\S]+?)%>/g;
@@ -725,7 +725,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     var setImmediate = typeof (setImmediate = freeGlobal && moduleExports && freeGlobal.setImmediate) == 'function' &&
       !reNative.test(setImmediate) && setImmediate;
 
-    /** Used to set meta data */
+    /** Used to set meta data on functions */
     var defineProperty = (function() {
       // IE 8 only accepts DOM elements
       try {
@@ -768,10 +768,10 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     (function() {
       var length = shadowedProps.length;
       while (length--) {
-        var prop = shadowedProps[length];
+        var key = shadowedProps[length];
         for (var className in nonEnumProps) {
-          if (hasOwnProperty.call(nonEnumProps, className) && !hasOwnProperty.call(nonEnumProps[className], prop)) {
-            nonEnumProps[className][prop] = false;
+          if (hasOwnProperty.call(nonEnumProps, className) && !hasOwnProperty.call(nonEnumProps[className], key)) {
+            nonEnumProps[className][key] = false;
           }
         }
       }
@@ -881,8 +881,8 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           props = [];
 
       ctor.prototype = { 'valueOf': 1, 'y': 1 };
-      for (var prop in new ctor) { props.push(prop); }
-      for (prop in arguments) { }
+      for (var key in new ctor) { props.push(key); }
+      for (key in arguments) { }
 
       /**
        * Detect if an `arguments` object's [[Class]] is resolvable (all but Firefox < 4, IE < 9).
@@ -946,7 +946,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
        * @memberOf _.support
        * @type boolean
        */
-      support.nonEnumArgs = prop != 0;
+      support.nonEnumArgs = key != 0;
 
       /**
        * Detect if properties shadowing those on `Object.prototype` are non-enumerable.
@@ -1210,13 +1210,13 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      *
      * @private
      * @param {*} value The value to clone.
-     * @param {boolean} [deep=false] Specify a deep clone.
+     * @param {boolean} [isDeep=false] Specify a deep clone.
      * @param {Function} [callback] The function to customize cloning values.
      * @param {Array} [stackA=[]] Tracks traversed source objects.
      * @param {Array} [stackB=[]] Associates clones with source counterparts.
      * @returns {*} Returns the cloned value.
      */
-    function baseClone(value, deep, callback, stackA, stackB) {
+    function baseClone(value, isDeep, callback, stackA, stackB) {
       if (callback) {
         var result = callback(value);
         if (typeof result != 'undefined') {
@@ -1249,7 +1249,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         return value;
       }
       var isArr = isArray(value);
-      if (deep) {
+      if (isDeep) {
         // check for circular references and return corresponding clone
         var initedStack = !stackA;
         stackA || (stackA = getArray());
@@ -1276,7 +1276,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         }
       }
       // exit for shallow clone
-      if (!deep) {
+      if (!isDeep) {
         return result;
       }
       // add the source value to the stack of traversed objects
@@ -1286,7 +1286,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
 
       // recursively populate clone (susceptible to call stack limits)
       (isArr ? baseEach : forOwn)(value, function(objValue, key) {
-        result[key] = baseClone(objValue, deep, callback, stackA, stackB);
+        result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
       });
 
       if (initedStack) {
@@ -1403,20 +1403,18 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
 
       function bound() {
         var thisBinding = isBind ? thisArg : this;
-        if (isCurry || partialArgs || partialRightArgs) {
-          if (partialArgs) {
-            var args = partialArgs.slice();
-            push.apply(args, arguments);
+        if (partialArgs) {
+          var args = partialArgs.slice();
+          push.apply(args, arguments);
+        }
+        if (partialRightArgs || isCurry) {
+          args || (args = slice(arguments));
+          if (partialRightArgs) {
+            push.apply(args, partialRightArgs);
           }
-          if (partialRightArgs || isCurry) {
-            args || (args = slice(arguments));
-            if (partialRightArgs) {
-              push.apply(args, partialRightArgs);
-            }
-            if (isCurry && args.length < arity) {
-              bitmask |= 16 & ~32;
-              return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
-            }
+          if (isCurry && args.length < arity) {
+            bitmask |= 16 & ~32;
+            return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
           }
         }
         args || (args = arguments);
@@ -1435,17 +1433,54 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     }
 
     /**
+     * The base implementation of `_.difference` that accepts a single array
+     * of values to exclude.
+     *
+     * @private
+     * @param {Array} array The array to process.
+     * @param {Array} [values] The array of values to exclude.
+     * @returns {Array} Returns a new array of filtered values.
+     */
+    function baseDifference(array, values) {
+      var index = -1,
+          indexOf = getIndexOf(),
+          length = array ? array.length : 0,
+          isLarge = length >= largeArraySize && indexOf === baseIndexOf,
+          result = [];
+
+      if (isLarge) {
+        var cache = createCache(values);
+        if (cache) {
+          indexOf = cacheIndexOf;
+          values = cache;
+        } else {
+          isLarge = false;
+        }
+      }
+      while (++index < length) {
+        var value = array[index];
+        if (indexOf(values, value) < 0) {
+          result.push(value);
+        }
+      }
+      if (isLarge) {
+        releaseObject(values);
+      }
+      return result;
+    }
+
+    /**
      * The base implementation of `_.flatten` without support for callback
      * shorthands or `thisArg` binding.
      *
      * @private
      * @param {Array} array The array to flatten.
      * @param {boolean} [isShallow=false] A flag to restrict flattening to a single level.
-     * @param {boolean} [isArgArrays=false] A flag to restrict flattening to arrays and `arguments` objects.
+     * @param {boolean} [isStrict=false] A flag to restrict flattening to arrays and `arguments` objects.
      * @param {number} [fromIndex=0] The index to start from.
      * @returns {Array} Returns a new flattened array.
      */
-    function baseFlatten(array, isShallow, isArgArrays, fromIndex) {
+    function baseFlatten(array, isShallow, isStrict, fromIndex) {
       var index = (fromIndex || 0) - 1,
           length = array ? array.length : 0,
           result = [];
@@ -1457,7 +1492,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
             && (isArray(value) || isArguments(value))) {
           // recursively flatten arrays (susceptible to call stack limits)
           if (!isShallow) {
-            value = baseFlatten(value, isShallow, isArgArrays);
+            value = baseFlatten(value, isShallow, isStrict);
           }
           var valIndex = -1,
               valLength = value.length,
@@ -1467,7 +1502,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           while (++valIndex < valLength) {
             result[resIndex++] = value[valIndex];
           }
-        } else if (!isArgArrays) {
+        } else if (!isStrict) {
           result.push(value);
         }
       }
@@ -1550,8 +1585,11 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
       var isArr = className == arrayClass;
       if (!isArr) {
         // unwrap any `lodash` wrapped values
-        if (hasOwnProperty.call(a, '__wrapped__ ') || hasOwnProperty.call(b, '__wrapped__')) {
-          return baseIsEqual(a.__wrapped__ || a, b.__wrapped__ || b, callback, isWhere, stackA, stackB);
+        var aWrapped = hasOwnProperty.call(a, '__wrapped__'),
+            bWrapped = hasOwnProperty.call(b, '__wrapped__');
+
+        if (aWrapped || bWrapped) {
+          return baseIsEqual(aWrapped ? a.__wrapped__ : a, bWrapped ? b.__wrapped__ : b, callback, isWhere, stackA, stackB);
         }
         // exit for functions and DOM nodes
         if (className != objectClass || (!support.nodeClass && (isNode(a) || isNode(b)))) {
@@ -2040,7 +2078,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     if (!support.argsClass) {
       isArguments = function(value) {
         return value && typeof value == 'object' && typeof value.length == 'number' &&
-          hasOwnProperty.call(value, 'callee') && propertyIsEnumerable.call(value, 'callee') || false;
+          hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee') || false;
       };
     }
 
@@ -2221,7 +2259,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
     });
 
     /**
-     * Creates a clone of `value`. If `deep` is `true` nested objects will also
+     * Creates a clone of `value`. If `isDeep` is `true` nested objects will also
      * be cloned, otherwise they will be assigned by reference. If a callback
      * is provided it will be executed to produce the cloned values. If the
      * callback returns `undefined` cloning will be handled by the method instead.
@@ -2231,7 +2269,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * @memberOf _
      * @category Objects
      * @param {*} value The value to clone.
-     * @param {boolean} [deep=false] Specify a deep clone.
+     * @param {boolean} [isDeep=false] Specify a deep clone.
      * @param {Function} [callback] The function to customize cloning values.
      * @param {*} [thisArg] The `this` binding of `callback`.
      * @returns {*} Returns the cloned value.
@@ -2260,15 +2298,15 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * clone.childNodes.length;
      * // => 0
      */
-    function clone(value, deep, callback, thisArg) {
+    function clone(value, isDeep, callback, thisArg) {
       // allows working with "Collections" methods without using their `index`
-      // and `collection` arguments for `deep` and `callback`
-      if (typeof deep != 'boolean' && deep != null) {
+      // and `collection` arguments for `isDeep` and `callback`
+      if (typeof isDeep != 'boolean' && isDeep != null) {
         thisArg = callback;
-        callback = deep;
-        deep = false;
+        callback = isDeep;
+        isDeep = false;
       }
-      return baseClone(value, deep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
+      return baseClone(value, isDeep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
     }
 
     /**
@@ -3170,23 +3208,29 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * // => { 'name': 'fred' }
      */
     function omit(object, callback, thisArg) {
-      var indexOf = getIndexOf(),
-          isFunc = typeof callback == 'function',
-          result = {};
+      var result = {};
+      if (typeof callback != 'function') {
+        var props = [];
+        forIn(object, function(value, key) {
+          props.push(key);
+        });
+        props = baseDifference(props, baseFlatten(arguments, true, false, 1));
 
-      if (isFunc) {
-        callback = lodash.createCallback(callback, thisArg, 3);
-      } else {
-        var props = baseFlatten(arguments, true, false, 1);
-      }
-      forIn(object, function(value, key, object) {
-        if (isFunc
-              ? !callback(value, key, object)
-              : indexOf(props, key) < 0
-            ) {
-          result[key] = value;
+        var index = -1,
+            length = props.length;
+
+        while (++index < length) {
+          var key = props[index];
+          result[key] = object[key];
         }
-      });
+      } else {
+        callback = lodash.createCallback(callback, thisArg, 3);
+        forIn(object, function(value, key, object) {
+          if (!callback(value, key, object)) {
+            result[key] = value;
+          }
+        });
+      }
       return result;
     }
 
@@ -3312,7 +3356,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         }
       }
       if (callback) {
-        callback = baseCreateCallback(callback, thisArg, 4);
+        callback = lodash.createCallback(callback, thisArg, 4);
         (isArr ? baseEach : forOwn)(object, function(value, index, object) {
           return callback(accumulator, value, index, object);
         });
@@ -3408,7 +3452,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * _.contains({ 'name': 'fred', 'age': 40 }, 'fred');
      * // => true
      *
-     * _.contains('pebbles', 'ur');
+     * _.contains('pebbles', 'eb');
      * // => true
      */
     function contains(collection, target, fromIndex) {
@@ -4159,7 +4203,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      */
     function reduce(collection, callback, accumulator, thisArg) {
       var noaccum = arguments.length < 3;
-      callback = baseCreateCallback(callback, thisArg, 4);
+      callback = lodash.createCallback(callback, thisArg, 4);
 
       if (isArray(collection)) {
         var index = -1,
@@ -4202,7 +4246,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      */
     function reduceRight(collection, callback, accumulator, thisArg) {
       var noaccum = arguments.length < 3;
-      callback = baseCreateCallback(callback, thisArg, 4);
+      callback = lodash.createCallback(callback, thisArg, 4);
       forEachRight(collection, function(value, index, collection) {
         accumulator = noaccum
           ? (noaccum = false, value)
@@ -4549,7 +4593,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * @memberOf _
      * @category Arrays
      * @param {Array} array The array to process.
-     * @param {...Array} [array] The arrays of values to exclude.
+     * @param {...Array} [values] The arrays of values to exclude.
      * @returns {Array} Returns a new array of filtered values.
      * @example
      *
@@ -4557,33 +4601,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * // => [1, 3, 4]
      */
     function difference(array) {
-      var index = -1,
-          indexOf = getIndexOf(),
-          length = array ? array.length : 0,
-          seen = baseFlatten(arguments, true, true, 1),
-          result = [];
-
-      var isLarge = length >= largeArraySize && indexOf === baseIndexOf;
-
-      if (isLarge) {
-        var cache = createCache(seen);
-        if (cache) {
-          indexOf = cacheIndexOf;
-          seen = cache;
-        } else {
-          isLarge = false;
-        }
-      }
-      while (++index < length) {
-        var value = array[index];
-        if (indexOf(seen, value) < 0) {
-          result.push(value);
-        }
-      }
-      if (isLarge) {
-        releaseObject(seen);
-      }
-      return result;
+      return baseDifference(array, baseFlatten(arguments, true, true, 1));
     }
 
     /**
@@ -5447,7 +5465,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * // => [2, 3, 4]
      */
     function without(array) {
-      return difference(array, slice(arguments, 1));
+      return baseDifference(array, slice(arguments, 1));
     }
 
     /**
@@ -5878,6 +5896,9 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           if (isCalled) {
             lastCalled = now();
             result = func.apply(thisArg, args);
+            if (!timeoutId && !maxTimeoutId) {
+              args = thisArg = null;
+            }
           }
         } else {
           timeoutId = setTimeout(delayed, remaining);
@@ -5892,6 +5913,9 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
         if (trailing || (maxWait !== wait)) {
           lastCalled = now();
           result = func.apply(thisArg, args);
+          if (!timeoutId && !maxTimeoutId) {
+            args = thisArg = null;
+          }
         }
       };
 
@@ -5907,8 +5931,10 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
           if (!maxTimeoutId && !leading) {
             lastCalled = stamp;
           }
-          var remaining = maxWait - (stamp - lastCalled);
-          if (remaining <= 0) {
+          var remaining = maxWait - (stamp - lastCalled),
+              isCalled = remaining <= 0;
+
+          if (isCalled) {
             if (maxTimeoutId) {
               maxTimeoutId = clearTimeout(maxTimeoutId);
             }
@@ -5919,11 +5945,18 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
             maxTimeoutId = setTimeout(maxDelayed, remaining);
           }
         }
-        if (!timeoutId && wait !== maxWait) {
+        if (isCalled && timeoutId) {
+          timeoutId = clearTimeout(timeoutId);
+        }
+        else if (!timeoutId && wait !== maxWait) {
           timeoutId = setTimeout(delayed, wait);
         }
         if (leadingCall) {
+          isCalled = true;
           result = func.apply(thisArg, args);
+        }
+        if (isCalled && !timeoutId && !maxTimeoutId) {
+          args = thisArg = null;
         }
         return result;
       };
@@ -6452,7 +6485,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * debugging. See http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl
      *
      * For more information on precompiling templates see:
-     * http://lodash.com/#custom-builds
+     * http://lodash.com/custom-builds
      *
      * For more information on Chrome extension sandboxes see:
      * http://developer.chrome.com/stable/extensions/sandboxingEval.html
@@ -7021,7 +7054,7 @@ require.register("lodash-lodash/dist/lodash.compat.js", function(exports, requir
      * @memberOf _
      * @type string
      */
-    lodash.VERSION = '2.2.1';
+    lodash.VERSION = '2.3.0';
 
     // add "Chaining" functions to the wrapper
     lodash.prototype.chain = wrapperChain;
@@ -8510,7 +8543,7 @@ function Notifications(options) {
     maxDisplayed: 3,
     displayTimer: 3000,
     position: 'top',
-    container: null
+    container: document.body
   };
 
   var errorMessage;
@@ -8545,6 +8578,7 @@ function Notifications(options) {
 
   this._emitter = new Emitter();
   this.ctrl = new NotificationsCtrl(cleanOptions);
+  this.ctrl.initialize();
   this._subscriptions = [];
 
   _.bindAll(this);
@@ -8595,25 +8629,13 @@ Notifications.prototype.subscribe = function(rooms, cb) {
                                  'before you can subscribe.');
   }
 
-  function iterator(subscription, next) {
-    subscription.channel.on('message', self.ctrl.handler, next);
-  }
+  _.each(newSubs, function(subscription) {
+    subscription.channel.on('message', self.ctrl.handler);
+  });
 
-  function done(err) {
-    if (err) {
-      _.each(newSubs, function(sub) {
-        sub.channel.off('message', self.ctrl.handler);
-      });
+  self._subscriptions = _.union(self._subscriptions, newSubs);
 
-      return self._throwOrCallback(err, cb);
-    }
-
-    self._subscriptions = _.union(newSubs, self._subscriptions);
-
-    cb(null, self);
-  }
-
-  async.each(newSubs, iterator, done);
+  return cb(null, self);
 };
 
 /**
@@ -8622,21 +8644,11 @@ Notifications.prototype.subscribe = function(rooms, cb) {
  * @private
  */
 Notifications.prototype.unsubscribe = function(cb) {
-  var self = this;
+  _.each(this._subscriptions, function(subscription) {
+    subscription.channel.off('message', this.ctrl.handler);
+  }, this);
 
-  function iterator(subscription, next) {
-    subscription.channel.off('message', self.ctrl.handler, next);
-  }
-
-  function done(err) {
-    if (err) {
-      return self._throwOrCallback(err, cb);
-    }
-
-    cb();
-  }
-
-  async.each(self._subscriptions, iterator, done);
+  return cb(null, this);
 };
 
 /**
@@ -8781,89 +8793,70 @@ var classes = require('classes');
 
 /** Module constants **/
 
-var CONTAINER_CLASS = 'gi-notify-container';
-var CONTAINER_CLASS_CUSTOM = '.gi-notify-container-custom';
+var WRAPPER_CLASS = 'gi-notify-wrapper';
+var WRAPPER_CLASS_CUSTOM = 'gi-notify-wrapper-custom';
 var OVERRIDE_CLASS = 'gi-override';
 var POSITION_CLASS = 'gi-notify-<%- position %>';
 
 function NotificationsCtrl(options) {
   this._options = options;
+
+  this._container = options.container;
+  this._wrapper = null;
+
   this._pendingNotifications = []; // Notification container
   this._activeNotifications = []; // Notifications currently in the DOM
 
   // Expose constants
-  this.CONTAINER_CLASS = CONTAINER_CLASS;
-  this.CONTAINER_CLASS_CUSTOM = CONTAINER_CLASS_CUSTOM;
+  this.WRAPPER_CLASS = WRAPPER_CLASS;
+  this.WRAPPER_CLASS_CUSTOM = WRAPPER_CLASS_CUSTOM;
   this.OVERRIDE_CLASS = OVERRIDE_CLASS;
 
   _.bindAll(this);
 }
 
 /**
+ * Initializes NotificationCtrl
+ *
+ * @public
+ */
+NotificationsCtrl.prototype.initialize = function() {
+  this._wrapper = document.createElement('div');
+
+  var position = _.template(POSITION_CLASS, {
+    position: this._options.position
+  });
+
+  var wrapperClasses = [OVERRIDE_CLASS, position];
+
+  if (this._container != document.body) {
+     wrapperClasses.push(WRAPPER_CLASS_CUSTOM);
+  } else {
+     wrapperClasses.push(WRAPPER_CLASS);
+  }
+
+  for (var i = 0; i < wrapperClasses.length; ++i) {
+    classes(this._wrapper).add(wrapperClasses[i]);
+  }
+
+  this._container.appendChild(this._wrapper);
+};
+
+/**
  * Add an incoming notification to the pending notifications queue
  *
- * @private
+ * @public
  * @param {Object} notificationData
- * @see Notification#_addContainer()
  */
 NotificationsCtrl.prototype.handler = function(notificationData) {
   if (this.disabled) {
     return;
   }
 
-  this._addContainer();
-
-  var notification = new NotificationView(notificationData, this._container);
+  var notification = new NotificationView(notificationData, this._wrapper);
 
   this._pendingNotifications.push(notification);
   this._displayNotifications();
-};
-
-/**
- * Render the notification container
- *
- * @private
- */
-NotificationsCtrl.prototype._addContainer = function() {
-  // Don't render the container twice
-  if (this._container) {
-     return;
-  }
-
-  var position = _.template(POSITION_CLASS, {
-    position: this._options.position
-  });
-
-  this._container = this._options.container || document.createElement('div');
-
-  var containerClasses = [OVERRIDE_CLASS, position];
-
-  if (this._options.container) {
-     containerClasses.push(CONTAINER_CLASS_CUSTOM);
-  } else {
-     containerClasses.push(CONTAINER_CLASS);
-  }
-
-  for (var i = 0; i < containerClasses.length; ++i) {
-    classes(this._container).add(containerClasses[i]);
-  }
-
-  document.body.appendChild(this._container);
-};
-
-/**
- * Removes the container after all the notifications have been displayed.
- * @private
- */
-NotificationsCtrl.prototype._removeContainer = function() {
-  if (!this._container) {
-    return;
-  }
-
-  this._container.parentNode.removeChild(this._container);
-
-  // Mark as null so that it'll be re-appended when the next notification comes.
-  this._container = null;
 };
 
 /**
@@ -8892,6 +8885,8 @@ NotificationsCtrl.prototype._displayNotifications = function() {
     // Increment the active notifications
     self._activeNotifications.push(notification);
   }
+
+  this._wrapper.style.display = 'block';
 };
 
 /**
@@ -8907,7 +8902,8 @@ NotificationsCtrl.prototype._notificationRemoved = function() {
   this._displayNotifications();
 
   if (this._activeNotifications.length <= 0) {
-    this._removeContainer();
+    //hide wrapper
+    this._wrapper.style.display = 'none';
   }
 };
 
@@ -8918,9 +8914,8 @@ NotificationsCtrl.prototype._notificationRemoved = function() {
  */
 NotificationsCtrl.prototype.destroy = function() {
   this.disabled = true;
-  if (this._container) {
-    document.body.removeChild(this._container);
-  }
+
+  this._container.removeChild(this._wrapper);
 };
 
 });
@@ -8952,10 +8947,10 @@ var notificationTemplate = require('../templates/template.html');
  *
  * @constructor
  * @param {Object} notificationData
- * @param {Object} container
+ * @param {Object} wrapper
  */
-function NotificationView(notificationData, container) {
-  this._container = container;
+function NotificationView(notificationData, wrapper) {
+  this._wrapper = wrapper;
   this._emitter = new Emitter();
   this._html = _.template(notificationTemplate, notificationData);
 
@@ -8973,10 +8968,10 @@ NotificationView.prototype.render = function(delay) {
   this._el = document.createElement('div');
   this._el.innerHTML = this._html;
 
-  if (!this._container.childNodes[0]) {
-    this._container.appendChild(this._el);
+  if (!this._wrapper.childNodes[0]) {
+    this._wrapper.appendChild(this._el);
   } else {
-    this._container.insertBefore(this._el, this._container.childNodes[0]);
+    this._wrapper.insertBefore(this._el, this._wrapper.childNodes[0]);
   }
 
   this._displayStarted = (new Date()).getTime();
@@ -9048,13 +9043,13 @@ NotificationView.prototype._isDescendant = function(node, descendant) {
  * @public
  */
 NotificationView.prototype.remove = function() {
-  if (!this._container || !this._el || !this._timerId) {
+  if (!this._wrapper || !this._el || !this._timerId) {
     return;
   }
 
   clearTimeout(this._timerId);
 
-  this._container.removeChild(this._el);
+  this._wrapper.removeChild(this._el);
   this._emitter.emit('remove');
   this._emitter.off();
 };
